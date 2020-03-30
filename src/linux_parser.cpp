@@ -169,29 +169,86 @@ string LinuxParser::Ram(int pid) {
   std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatusFilename);
   std::istringstream linestream;
   string line, key;
+  int memory;
   while (stream.is_open()) {
     linestream.clear();
     std::getline(stream, line);
     linestream.str(line);
     linestream >> key;
     if (key == "VmSize:") {
+      linestream >> memory;
+      break;
+    }
+  }
+  return std::to_string(memory / 1000);
+}
+
+// TODO: Read and return the user ID associated with a process
+// REMOVE: [[maybe_unused]] once you define the function
+string LinuxParser::Uid(int pid) {
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatusFilename);
+  std::istringstream linestream;
+  string line, key;
+  while (stream.is_open()) {
+    linestream.clear();
+    std::getline(stream, line);
+    linestream.str(line);
+    linestream >> key;
+    if (key == "Uid:") {
       linestream >> key;
       break;
     }
   }
   return key;
-
-  return string();
 }
-
-// TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::User(int pid) {
+  string uid = Uid(pid);
+  std::ifstream stream(kPasswordPath);
+  std::istringstream linestream;
+  string line, key, userName, dumb;
+  while (stream.is_open()) {
+    linestream.clear();
+    std::getline(stream, line);
+    std::replace(line.begin(), line.end(), ':', ' ');
+    linestream.str(line);
+    linestream >> userName >> dumb >> key;
+    if (key == uid) {
+      return userName;
+    }
+  }
+}
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::UpTime(int pid) { 
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  std::istringstream linestream;
+  string line, chuck;
+  std::vector<string> v;
+  std::cout << kProcDirectory + std::to_string(pid) + kStatFilename << "\n" ;
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::cout << line << "\n";
+    linestream.clear();
+    linestream.str(line);
+    for (size_t i = 0; i < 22; i++)
+    {
+      linestream >> chuck;
+    }
+    long time = std::stol(chuck)/sysconf(_SC_CLK_TCK);
+    return (LinuxParser::UpTime() -  time);
+
+  }
+  
+  
+  
+  std::cout << v.size() << std::endl;
+  
+  
+  
+  
+  return 0; 
+  }
