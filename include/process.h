@@ -1,6 +1,6 @@
 #ifndef PROCESS_H
 #define PROCESS_H
-
+#include "linux_parser.h"
 #include <string>
 /*
 Basic class for Process representation
@@ -8,6 +8,12 @@ It contains relevant attributes as shown below
 */
 class Process {
  public:
+ Process(int pid) 
+      : pid_(pid),
+        user_(LinuxParser::User(pid)),
+        cmd_(LinuxParser::Command(pid)),
+        mem_(LinuxParser::Ram(pid)),
+        up_time_(LinuxParser::UpTime(pid)) {}
   int Pid();                               // TODO: See src/process.cpp
   std::string User();                      // TODO: See src/process.cpp
   std::string Command();                   // TODO: See src/process.cpp
@@ -18,6 +24,13 @@ class Process {
 
   // TODO: Declare any necessary private members
  private:
+  int           pid_;
+  std::string   user_;
+  std::string   cmd_;
+  float         cpu_utilization_;
+  std::string   mem_;
+  long int      up_time_;
+  std::string   proc_state;
 };
 
 #endif
