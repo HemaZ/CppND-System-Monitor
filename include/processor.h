@@ -7,9 +7,7 @@ class Processor {
 
   // TODO: Declare any necessary private members
  private:
- long lastIdle = 0;
- long lastActive = 0;
- long lastTotal  = 0;
+ float cpu_percentage;
 };
 
 #endif

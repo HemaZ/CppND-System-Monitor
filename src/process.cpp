@@ -15,10 +15,38 @@ int Process::Pid() { return pid_; }
 
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() {
-  long toaltime = LinuxParser::ActiveJiffies(pid_);
-  long seconds = UpTime();
-  long Hertz = _SC_CLK_TCK;
-  return (100 * ((toaltime / Hertz) / seconds));
+  string line;
+  string key;
+  int kutime_ = 12;
+  int kstime_ = 13;
+  int kcutime_ = 14;
+  int kcstime_ = 15;
+  int kstarttime_ = 20;
+  std::string pid_para;
+  vector<string> value;
+  std::string pid_st = std::to_string(pid_);
+  std::ifstream filestream(LinuxParser::kProcDirectory + pid_st +
+                           LinuxParser::kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    linestream >> key;
+    if (pid_ == std::stoi(key)) {
+      for (int i = 0; i < 21; i++) {
+        linestream >> pid_para;
+        value.push_back(pid_para);
+        // std::cout << cpu_time << std::endl;
+      }
+    }
+  }
+  const float freq = sysconf(_SC_CLK_TCK);
+  const float total_s =
+      std::stol(value[kutime_]) +
+      (std::stol(value[kstime_]) + std::stol(value[kcutime_]) +
+       std::stol(value[kcstime_])) /
+          freq;
+  const float result = total_s / std::stol(value[kstarttime_]);
+  return result;  // (22) starttime
 }
 
 // TODO: Return the command that generated this process
@@ -35,7 +63,6 @@ long int Process::UpTime() { return up_time_; }
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a) const { 
-    
-    return up_time_< a.up_time_; 
-    }
+bool Process::operator<(Process const& a) const {
+  return up_time_ < a.up_time_;
+}
